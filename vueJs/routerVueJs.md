@@ -72,47 +72,46 @@ import Navbar from '../components/NavBar.vue'
 ```
 
 code minimalnya, misal saya punya 2 viw home, dan login :
+lakukan import didalam komponen agar tidak selalu di load saat pertama kali
 
 ```js
-import { createWebHistory, createRouter } from 'vue-router'
-import BlankLayout from '@/layout/BlankLayout.vue'
-import NavbarView from '@/layout/NavbarView.vue'
-import HomeView from '@/views/HomeView.vue'
-import LoginView from '@/views/LoginView.vue'
+import { createWebHistory, createRouter } from "vue-router";
+import BlankLayout from "@/layout/BlankLayout.vue";
+import NavbarView from "@/layout/NavbarView.vue";
 
 const routes = [
   {
-    path: '/',
+    path: "/",
     component: NavbarView,
-    name: 'NavbarLayout',
+    name: "NavbarLayout",
     children: [
       {
-        path: '',
-        name: 'defaultpage',
-        component: HomeView,
-      },
-  },
-  {
-    path: '/login',
-    name: 'BlankLayout',
-    component: BlankLayout,
-    children: [
-      {
-        path: '/login',
-        name: 'login',
-        component: LoginView,
+        path: "",
+        name: "defaultpage",
+        component: () => import("../views/Home/Index.vue"),
       },
     ],
   },
-]
+  {
+    path: "/login",
+    name: "BlankLayout",
+    component: BlankLayout,
+    children: [
+      {
+        path: "/login",
+        name: "login",
+        component: () => import("../views/LoginView.vue"),
+      },
+    ],
+  },
+];
 
 const router = createRouter({
   history: createWebHistory(),
   routes,
-})
+});
 
-export default router
-
+export default router;
 ```
 
 # setUp Router Parent untuk Router View
@@ -128,4 +127,16 @@ pada App.vue ( parent Aplikasi ) setting Router View
 
 <style scoped></style>
 
+```
+
+# Khusus jika Kamu Menggunakan Verssi TS
+
+tambahkan settingan config ini di `tsconfig.json/env.d.ts`
+
+```js
+declare module '*.vue' {
+  import { DefineComponent } from 'vue'
+  const component: DefineComponent<{}, {}, any>
+  export default component
+}
 ```
