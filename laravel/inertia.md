@@ -195,3 +195,60 @@ Route::get('/', [DashboardController::class, 'index']);
 # BOOOMS
 
 seharusnya sudah terhubung
+
+# Optional Jika Ingin Menggunakan Layout Parent ( hanya Konten Yang berubah2 )
+
+buat layout utama misal : `resource/Layouts/Mainlayout.vue`
+kemudian saya isi dengan :
+
+```vue
+<script setup>
+import NavbarComponent from "../Components/NavbarComponent.vue";
+import { usePage } from "@inertiajs/vue3";
+import { computed } from "vue";
+
+const page = usePage();
+const isNoPadding = computed(() => {
+  const path = page.url;
+  return path === "/" || path.startsWith("/artikel");
+});
+</script>
+
+<template>
+  <div class="min-h-screen flex flex-col">
+    <NavbarComponent />
+
+    <main>
+      <slot />
+    </main>
+
+    <footer class="bg-blue-900 border-t border-blue-800 text-white p-8">
+      <div>FOOTER</div>
+    </footer>
+  </div>
+</template>
+```
+
+lalu sesuaikan `app.js` atau file js utama yang digunakan :
+
+```js
+import { resolvePageComponent } from "laravel-vite-plugin/inertia-helpers";
+import MainLayout from "./Layouts/MainLayout.vue";
+createInertiaApp({
+  resolve: (name) => {
+    const page = resolvePageComponent(
+      `./Pages/${name}.vue`,
+      import.meta.glob("./Pages/**/*.vue"),
+    );
+    page.then((module) => {
+      module.default.layout = module.default.layout || MainLayout;
+    });
+    return page;
+  },
+  setup({ el, App, props, plugin }) {
+    createApp({ render: () => h(App, props) })
+      .use(plugin)
+      .mount(el);
+  },
+});
+```
