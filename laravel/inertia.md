@@ -196,7 +196,7 @@ Route::get('/', [DashboardController::class, 'index']);
 
 seharusnya sudah terhubung
 
-# Optional Jika Ingin Menggunakan Layout Parent ( hanya Konten Yang berubah2 )
+# Optional Jika Ingin Menggunakan Layout Parent ( hanya Konten Yang berubah2 ) Semua Layput sama
 
 buat layout utama misal : `resource/Layouts/Mainlayout.vue`
 kemudian saya isi dengan :
@@ -251,4 +251,79 @@ createInertiaApp({
       .mount(el);
   },
 });
+```
+
+# Optional Jika Ingin Menggunakan Layout Parent ( hanya Konten Yang berubah2 ) Layout Dinamus, Kadang Dipakai Kadang Tidak
+
+di `app.js` edit seperti ini :
+
+```js
+import { createApp, h, nextTick, onMounted } from "vue";
+import { createInertiaApp, router } from "@inertiajs/vue3";
+import { initFlowbite } from "flowbite";
+import { resolvePageComponent } from "laravel-vite-plugin/inertia-helpers";
+
+import MainLayout from "./Layouts/MainLayout.vue";
+
+createInertiaApp({
+  resolve: (name) => {
+    const page = resolvePageComponent(
+      `./Pages/${name}.vue`,
+      import.meta.glob("./Pages/**/*.vue"),
+    );
+    page.then((module) => {
+      if (!Object.prototype.hasOwnProperty.call(module.default, "layout")) {
+        module.default.layout = MainLayout;
+      }
+    });
+    return page;
+  },
+  setup({ el, App, props, plugin }) {
+    createApp({ render: () => h(App, props) })
+      .use(plugin)
+      .mount(el);
+    nextTick(() => {
+      if (typeof window !== "undefined") {
+        initFlowbite();
+      }
+    });
+  },
+});
+
+router.on("finish", () => {
+  initFlowbite();
+});
+```
+
+atau yang berubah :
+
+```js
+page.then((module) => {
+  if (!Object.prototype.hasOwnProperty.call(module.default, "layout")) {
+    module.default.layout = MainLayout;
+  }
+});
+```
+
+lalu di setiap page jika butuh layout lain atau tidak menggunakan layout cukup sertakan kode ini di script :
+
+1. Jika Full Tanpa Layout
+
+```vue
+<script>
+export default {
+  layout: null,
+};
+</script>
+```
+
+2. jika ingin layout lain :
+
+```vue
+<script>
+import Layout from "../../Layouts/NamaLayout.vue";
+export default {
+  layout: NamaLayout,
+};
+</script>
 ```
